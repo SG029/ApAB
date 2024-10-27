@@ -28,9 +28,7 @@ public class PauseScreen implements Screen {
         backgroundTexture = new Texture(Gdx.files.internal("pause-bg.png"));
         Image backgroundImage = new Image(backgroundTexture);
         backgroundImage.setSize(1280, 720);  // Adjust to match screen size
-
-        // Add the background image first to ensure it's drawn behind other elements
-        stage.addActor(backgroundImage);
+        stage.addActor(backgroundImage);  // Add background to the stage
 
         // Load button textures
         resumeTexture = new Texture(Gdx.files.internal("res-btn.png"));
@@ -46,24 +44,30 @@ public class PauseScreen implements Screen {
         ImageButton retryButton = new ImageButton(new TextureRegionDrawable(retryTexture));
         ImageButton exitButton = new ImageButton(new TextureRegionDrawable(exitTexture));
 
-        // Set button sizes (assuming all are the same size)
-        float buttonWidth = 200;
-        float buttonHeight = 80;
+        // Set button sizes to be larger for better visibility
+        float buttonWidth = 180;
+        float buttonHeight = 180;
         resumeButton.setSize(buttonWidth, buttonHeight);
         menuButton.setSize(buttonWidth, buttonHeight);
         settingsButton.setSize(buttonWidth, buttonHeight);
         retryButton.setSize(buttonWidth, buttonHeight);
         exitButton.setSize(buttonWidth, buttonHeight);
 
-        // Center align buttons and arrange them vertically
-        float centerX = (1280 - buttonWidth) / 2;
-        float startY = 360;  // Adjust Y position to start the button arrangement
+        // Arrange buttons in a staggered layout
+        // Top row (Resume and Settings), shifted slightly down
+        float topRowY = 380;  // Lowered from 420 to 380
+        float centerX = 1280 / 2 - (buttonWidth + 20); // Center first button of top row
+        resumeButton.setPosition(centerX, topRowY);
+        settingsButton.setPosition(centerX + buttonWidth + 40, topRowY);  // Spaced by 40px
 
-        resumeButton.setPosition(centerX, startY + 2 * (buttonHeight + 10));  // 10px gap
-        menuButton.setPosition(centerX, startY + (buttonHeight + 10));
-        settingsButton.setPosition(centerX, startY);
-        retryButton.setPosition(centerX, startY - (buttonHeight + 10));
-        exitButton.setPosition(centerX, startY - 2 * (buttonHeight + 10));
+        // Middle row (Menu and Retry) stays in its current position
+        float middleRowY = 220;
+        menuButton.setPosition(centerX, middleRowY);
+        retryButton.setPosition(centerX + buttonWidth + 40, middleRowY);  // Spaced by 40px
+
+        // Bottom row (Exit Button) stays in its current position
+        float exitButtonY = 50;  // Positioned below the middle row
+        exitButton.setPosition(centerX + (buttonWidth + 40) / 2, exitButtonY);
 
         // Add click listeners for each button
         resumeButton.addListener(new ClickListener() {

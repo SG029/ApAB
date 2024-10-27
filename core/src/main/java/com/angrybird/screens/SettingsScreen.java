@@ -12,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
@@ -25,7 +26,8 @@ public class SettingsScreen implements Screen {
     private final Stage stage;
     private Skin skin;
     private Texture backgroundTexture, backButtonTexture, backHoverTexture, exitButtonTexture;
-    private CheckBox muteCheckBox; // Declare muteCheckBox as a class field
+    private CheckBox muteCheckBox;
+    private Slider volumeSlider;
 
     public SettingsScreen(final AngryBirdGame game, final Screen previousScreen) {
         this.game = game;
@@ -46,25 +48,22 @@ public class SettingsScreen implements Screen {
         backButtonTexture = new Texture(Gdx.files.internal("back.png"));
         backHoverTexture = new Texture(Gdx.files.internal("back-h.png"));
 
-        // Load exit button image
-        exitButtonTexture = new Texture(Gdx.files.internal("exit-btn.png"));
-
         // Create back button with normal and hover textures
         ImageButton backButton = new ImageButton(
             new TextureRegionDrawable(backButtonTexture),
             new TextureRegionDrawable(backHoverTexture)
         );
-        backButton.setSize(80, 80);
-        float originalYPosition = (720 - backButton.getHeight()) / 2;
-        backButton.setPosition(50, originalYPosition);
+        backButton.setSize(100, 100);
+        float backButtonYPosition = (720 - backButton.getHeight()) / 2; // Center vertically on left side
+        backButton.setPosition(20, backButtonYPosition);
 
         backButton.addListener(new ClickListener() {
             public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                backButton.addAction(Actions.moveTo(backButton.getX(), originalYPosition + 0.01f * 720, 0.2f));
+                backButton.addAction(Actions.moveTo(backButton.getX(), backButtonYPosition + 10, 0.2f));
             }
 
             public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                backButton.addAction(Actions.moveTo(backButton.getX(), originalYPosition, 0.2f));
+                backButton.addAction(Actions.moveTo(backButton.getX(), backButtonYPosition, 0.2f));
             }
 
             @Override
@@ -76,10 +75,14 @@ public class SettingsScreen implements Screen {
         // Center alignment for UI elements
         float centerX = 1280 / 2f;
 
-        // Volume Slider, centered horizontally, and increased by 200%
-        Slider volumeSlider = new Slider(0, 100, 1, false, skin);
-        volumeSlider.setSize(400, 100);  // Increase size by 200%
-        volumeSlider.setPosition(centerX - volumeSlider.getWidth() / 2, 300);
+        // Volume Label, centered above the slider
+        Label volumeLabel = new Label("Volume", skin);
+        volumeLabel.setPosition(centerX - volumeLabel.getWidth() / 2, 400);
+
+        // Volume Slider, shorter and centered horizontally
+        volumeSlider = new Slider(0, 100, 1, false, skin);
+        volumeSlider.setSize(400, 40);  // Shorter width for a more compact look
+        volumeSlider.setPosition(centerX - volumeSlider.getWidth() / 2, 350);
         volumeSlider.setValue(game.getMusicVolume() * 100);
 
         volumeSlider.addListener(new ChangeListener() {
@@ -92,11 +95,11 @@ public class SettingsScreen implements Screen {
             }
         });
 
-        // Mute Checkbox, centered horizontally, and increased by 200%
+        // Mute Checkbox, centered below the volume slider and enlarged
         muteCheckBox = new CheckBox("Mute", skin);
-        muteCheckBox.setTransform(true);  // Enable transform to scale the checkbox
-        muteCheckBox.setScale(2f);        // Scale to 200%
-        muteCheckBox.setPosition(centerX - muteCheckBox.getWidth(), 250);  // Adjusted for increased size
+        muteCheckBox.setTransform(true); // Enable transform for scaling
+        muteCheckBox.setScale(2f);       // Make the checkbox larger
+        muteCheckBox.setPosition(centerX - muteCheckBox.getWidth(), 280);
         muteCheckBox.setChecked(game.getMusicVolume() == 0);
 
         muteCheckBox.addListener(new ClickListener() {
@@ -112,22 +115,23 @@ public class SettingsScreen implements Screen {
             }
         });
 
-        // Exit Button using an image, centered horizontally and increased by 200%
+        // Load exit button image
+        exitButtonTexture = new Texture(Gdx.files.internal("exit-btn.png"));
         ImageButton exitButton = new ImageButton(new TextureRegionDrawable(exitButtonTexture));
-        exitButton.setSize(250, 250);  // Increase size by 200%
-        float exitButtonOriginalY = 40;  // Position near the bottom
-        exitButton.setPosition(centerX - exitButton.getWidth() / 2, exitButtonOriginalY);
+        exitButton.setSize(150, 150);  // Larger exit button
+        float exitButtonY = 50;  // Position at the bottom-center
+        exitButton.setPosition(centerX - exitButton.getWidth() / 2, exitButtonY);
 
-        // Add hover effect to raise exit button by 0.5% on hover
+        // Add hover effect to raise exit button by a few pixels on hover
         exitButton.addListener(new ClickListener() {
             @Override
             public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                exitButton.addAction(Actions.moveTo(exitButton.getX(), exitButtonOriginalY + 0.005f * 720, 0.1f));
+                exitButton.addAction(Actions.moveTo(exitButton.getX(), exitButtonY + 10, 0.1f));
             }
 
             @Override
             public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                exitButton.addAction(Actions.moveTo(exitButton.getX(), exitButtonOriginalY, 0.1f));
+                exitButton.addAction(Actions.moveTo(exitButton.getX(), exitButtonY, 0.1f));
             }
 
             @Override
@@ -136,7 +140,10 @@ public class SettingsScreen implements Screen {
             }
         });
 
+        // Add components to the stage
+        stage.addActor(backgroundImage);
         stage.addActor(backButton);
+        stage.addActor(volumeLabel);
         stage.addActor(volumeSlider);
         stage.addActor(muteCheckBox);
         stage.addActor(exitButton);
@@ -144,7 +151,6 @@ public class SettingsScreen implements Screen {
 
     @Override
     public void show() {
-        // No action to start music here to prevent multiple play instances
     }
 
     @Override
