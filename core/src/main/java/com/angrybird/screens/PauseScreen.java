@@ -22,8 +22,6 @@ public class PauseScreen implements Screen {
         this.game = game;
         stage = new Stage(new ScreenViewport());
 
-        Gdx.input.setInputProcessor(stage);
-
         // Load the background texture and set it as an image on the stage
         backgroundTexture = new Texture(Gdx.files.internal("pause-bg.png"));
         Image backgroundImage = new Image(backgroundTexture);
@@ -54,19 +52,16 @@ public class PauseScreen implements Screen {
         exitButton.setSize(buttonWidth, buttonHeight);
 
         // Arrange buttons in a staggered layout
-        // Top row (Resume and Settings), shifted slightly down
-        float topRowY = 380;  // Lowered from 420 to 380
-        float centerX = 1280 / 2 - (buttonWidth + 20); // Center first button of top row
+        float topRowY = 380;
+        float centerX = 1280 / 2 - (buttonWidth + 20);
         resumeButton.setPosition(centerX, topRowY);
-        settingsButton.setPosition(centerX + buttonWidth + 40, topRowY);  // Spaced by 40px
+        settingsButton.setPosition(centerX + buttonWidth + 40, topRowY);
 
-        // Middle row (Menu and Retry) stays in its current position
         float middleRowY = 220;
         menuButton.setPosition(centerX, middleRowY);
-        retryButton.setPosition(centerX + buttonWidth + 40, middleRowY);  // Spaced by 40px
+        retryButton.setPosition(centerX + buttonWidth + 40, middleRowY);
 
-        // Bottom row (Exit Button) stays in its current position
-        float exitButtonY = 50;  // Positioned below the middle row
+        float exitButtonY = 50;
         exitButton.setPosition(centerX + (buttonWidth + 40) / 2, exitButtonY);
 
         // Add click listeners for each button
@@ -115,6 +110,8 @@ public class PauseScreen implements Screen {
 
     @Override
     public void show() {
+        // Reset the input processor to this stage
+        Gdx.input.setInputProcessor(stage);
     }
 
     @Override
