@@ -25,6 +25,7 @@ public class SettingsScreen implements Screen {
     private final Stage stage;
     private Skin skin;
     private Texture backgroundTexture, backButtonTexture, backHoverTexture, exitButtonTexture;
+    private CheckBox muteCheckBox; // Declare muteCheckBox as a class field
 
     public SettingsScreen(final AngryBirdGame game, final Screen previousScreen) {
         this.game = game;
@@ -84,13 +85,15 @@ public class SettingsScreen implements Screen {
         volumeSlider.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                float volume = volumeSlider.getValue() / 100f;
-                game.setMusicVolume(volume);
+                if (!muteCheckBox.isChecked()) {  // Only adjust volume if not muted
+                    float volume = volumeSlider.getValue() / 100f;
+                    game.setMusicVolume(volume);
+                }
             }
         });
 
         // Mute Checkbox, centered horizontally, and increased by 200%
-        CheckBox muteCheckBox = new CheckBox("Mute", skin);
+        muteCheckBox = new CheckBox("Mute", skin);
         muteCheckBox.setTransform(true);  // Enable transform to scale the checkbox
         muteCheckBox.setScale(2f);        // Scale to 200%
         muteCheckBox.setPosition(centerX - muteCheckBox.getWidth(), 250);  // Adjusted for increased size
@@ -101,8 +104,10 @@ public class SettingsScreen implements Screen {
             public void clicked(InputEvent event, float x, float y) {
                 if (muteCheckBox.isChecked()) {
                     game.setMusicVolume(0);
+                    volumeSlider.setValue(0);  // Update slider visually
                 } else {
-                    game.setMusicVolume(volumeSlider.getValue() / 100f);
+                    float volume = volumeSlider.getValue() / 100f;
+                    game.setMusicVolume(volume);
                 }
             }
         });
@@ -127,9 +132,7 @@ public class SettingsScreen implements Screen {
 
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if (exitButton.isPressed()) {
-                    Gdx.app.exit();
-                }
+                Gdx.app.exit();  // Exit the application
             }
         });
 
