@@ -32,7 +32,7 @@ complete with screen transitions and UI components, but without functional event
 
 ## How to Run
 1. Ensure Java and Gradle are installed.
-2. Clone the repository.
+2. Clone the [Repository](https://github.com/SG029/ApAB/)
 3. Use the following commands to build and run the project:
    ```bash
    ./gradlew desktop:run
@@ -49,4 +49,4 @@ In the next development phases, functionality will be added to enable gameplay m
 ## Credits
 - Game graphics and assets provided in the `assets/` folder.
 - Sound effects and music sources will be credited once implemented in future phases.
-- Project developed as part of an academic assignment at [IIIT Delhi](https://www.iiitd.ac.in/) by Sushant Gola and Satyam 
+- Project developed as part of an academic assignment at [IIIT Delhi](https://www.iiitd.ac.in/) by [Sushant Gola](https://github.com/SG029) and [Satyam](https://github.com/itzsam-lol) 
