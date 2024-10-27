@@ -4,17 +4,19 @@ import com.angrybird.AngryBirdGame;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 public class PauseScreen implements Screen {
     private final AngryBirdGame game;
     private final Stage stage;
-    private Skin skin;
+    private Texture backgroundTexture, resumeTexture, menuTexture, settingsTexture, retryTexture, exitTexture;
 
     public PauseScreen(final AngryBirdGame game) {
         this.game = game;
@@ -22,23 +24,48 @@ public class PauseScreen implements Screen {
 
         Gdx.input.setInputProcessor(stage);
 
-        skin = new Skin(Gdx.files.internal("uiskin.json"));
+        // Load the background texture and set it as an image on the stage
+        backgroundTexture = new Texture(Gdx.files.internal("pause-bg.png"));
+        Image backgroundImage = new Image(backgroundTexture);
+        backgroundImage.setSize(1280, 720);  // Adjust to match screen size
 
-        // Back to menu button
-        TextButton menuButton = new TextButton("Menu", skin);
-        menuButton.setPosition(400, 300);
-        menuButton.setSize(200, 50);
-        menuButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                game.setScreen(new HomeScreen(game));  // Back to HomeScreen
-            }
-        });
+        // Add the background image first to ensure it's drawn behind other elements
+        stage.addActor(backgroundImage);
 
-        // Resume button
-        TextButton resumeButton = new TextButton("Resume", skin);
-        resumeButton.setPosition(400, 250);
-        resumeButton.setSize(200, 50);
+        // Load button textures
+        resumeTexture = new Texture(Gdx.files.internal("res-btn.png"));
+        menuTexture = new Texture(Gdx.files.internal("menu-btn.png"));
+        settingsTexture = new Texture(Gdx.files.internal("set-btn.png"));
+        retryTexture = new Texture(Gdx.files.internal("retry-btn.png"));
+        exitTexture = new Texture(Gdx.files.internal("exit-btn.png"));
+
+        // Create image buttons
+        ImageButton resumeButton = new ImageButton(new TextureRegionDrawable(resumeTexture));
+        ImageButton menuButton = new ImageButton(new TextureRegionDrawable(menuTexture));
+        ImageButton settingsButton = new ImageButton(new TextureRegionDrawable(settingsTexture));
+        ImageButton retryButton = new ImageButton(new TextureRegionDrawable(retryTexture));
+        ImageButton exitButton = new ImageButton(new TextureRegionDrawable(exitTexture));
+
+        // Set button sizes (assuming all are the same size)
+        float buttonWidth = 200;
+        float buttonHeight = 80;
+        resumeButton.setSize(buttonWidth, buttonHeight);
+        menuButton.setSize(buttonWidth, buttonHeight);
+        settingsButton.setSize(buttonWidth, buttonHeight);
+        retryButton.setSize(buttonWidth, buttonHeight);
+        exitButton.setSize(buttonWidth, buttonHeight);
+
+        // Center align buttons and arrange them vertically
+        float centerX = (1280 - buttonWidth) / 2;
+        float startY = 360;  // Adjust Y position to start the button arrangement
+
+        resumeButton.setPosition(centerX, startY + 2 * (buttonHeight + 10));  // 10px gap
+        menuButton.setPosition(centerX, startY + (buttonHeight + 10));
+        settingsButton.setPosition(centerX, startY);
+        retryButton.setPosition(centerX, startY - (buttonHeight + 10));
+        exitButton.setPosition(centerX, startY - 2 * (buttonHeight + 10));
+
+        // Add click listeners for each button
         resumeButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -46,10 +73,20 @@ public class PauseScreen implements Screen {
             }
         });
 
-        // Retry button
-        TextButton retryButton = new TextButton("Retry", skin);
-        retryButton.setPosition(400, 200);
-        retryButton.setSize(200, 50);
+        menuButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                game.setScreen(new HomeScreen(game));  // Back to HomeScreen
+            }
+        });
+
+        settingsButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                game.setScreen(new SettingsScreen(game, PauseScreen.this));  // Go to SettingsScreen
+            }
+        });
+
         retryButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -57,9 +94,19 @@ public class PauseScreen implements Screen {
             }
         });
 
-        stage.addActor(menuButton);
+        exitButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                Gdx.app.exit();  // Exit the game
+            }
+        });
+
+        // Add buttons to the stage after the background
         stage.addActor(resumeButton);
+        stage.addActor(menuButton);
+        stage.addActor(settingsButton);
         stage.addActor(retryButton);
+        stage.addActor(exitButton);
     }
 
     @Override
@@ -93,6 +140,11 @@ public class PauseScreen implements Screen {
     @Override
     public void dispose() {
         stage.dispose();
-        skin.dispose();
+        if (backgroundTexture != null) backgroundTexture.dispose();
+        if (resumeTexture != null) resumeTexture.dispose();
+        if (menuTexture != null) menuTexture.dispose();
+        if (settingsTexture != null) settingsTexture.dispose();
+        if (retryTexture != null) retryTexture.dispose();
+        if (exitTexture != null) exitTexture.dispose();
     }
 }
