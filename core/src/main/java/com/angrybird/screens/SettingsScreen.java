@@ -53,6 +53,7 @@ public class SettingsScreen implements Screen {
             new TextureRegionDrawable(backButtonTexture),
             new TextureRegionDrawable(backHoverTexture)
         );
+
         backButton.setSize(100, 100);
         float backButtonYPosition = (720 - backButton.getHeight()) / 2; // Center vertically on left side
         backButton.setPosition(20, backButtonYPosition);
@@ -118,8 +119,10 @@ public class SettingsScreen implements Screen {
         // Load exit button image
         exitButtonTexture = new Texture(Gdx.files.internal("exit-btn.png"));
         ImageButton exitButton = new ImageButton(new TextureRegionDrawable(exitButtonTexture));
-        exitButton.setSize(150, 150);  // Larger exit button
-        float exitButtonY = 50;  // Position at the bottom-center
+        float buttonWidth = 200 * 1.2f;
+        float buttonHeight = 80 * 1.2f;
+        exitButton.setSize(buttonWidth, buttonHeight);  // Larger exit button
+        float exitButtonY = 150;  // Position at the bottom-center
         exitButton.setPosition(centerX - exitButton.getWidth() / 2, exitButtonY);
 
         // Add hover effect to raise exit button by a few pixels on hover

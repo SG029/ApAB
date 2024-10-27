@@ -5,12 +5,15 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 public class PauseScreen implements Screen {
@@ -42,27 +45,36 @@ public class PauseScreen implements Screen {
         ImageButton retryButton = new ImageButton(new TextureRegionDrawable(retryTexture));
         ImageButton exitButton = new ImageButton(new TextureRegionDrawable(exitTexture));
 
-        // Set button sizes to be larger for better visibility
-        float buttonWidth = 180;
-        float buttonHeight = 180;
+        // Set button sizes
+        float buttonWidth = 200 * 1.2f;
+        float buttonHeight = 80 * 1.2f;
+        float buttonGap = -10; // Gap between buttons
+
+        // Center alignment for the X axis
+        float centerX = (1280 - buttonWidth) / 2;
+
+        // Position buttons vertically in the center with equal spacing
         resumeButton.setSize(buttonWidth, buttonHeight);
         menuButton.setSize(buttonWidth, buttonHeight);
         settingsButton.setSize(buttonWidth, buttonHeight);
         retryButton.setSize(buttonWidth, buttonHeight);
         exitButton.setSize(buttonWidth, buttonHeight);
 
-        // Arrange buttons in a staggered layout
-        float topRowY = 380;
-        float centerX = 1280 / 2 - (buttonWidth + 20);
-        resumeButton.setPosition(centerX, topRowY);
-        settingsButton.setPosition(centerX + buttonWidth + 40, topRowY);
+        // Calculate the starting Y position for the top button
+        float startingY = 400;
 
-        float middleRowY = 220;
-        menuButton.setPosition(centerX, middleRowY);
-        retryButton.setPosition(centerX + buttonWidth + 40, middleRowY);
+        resumeButton.setPosition(centerX, startingY);
+        menuButton.setPosition(centerX, startingY - (buttonHeight + buttonGap));
+        settingsButton.setPosition(centerX, startingY - 2 * (buttonHeight + buttonGap));
+        retryButton.setPosition(centerX, startingY - 3 * (buttonHeight + buttonGap));
+        exitButton.setPosition(centerX, startingY - 4 * (buttonHeight + buttonGap));
 
-        float exitButtonY = 50;
-        exitButton.setPosition(centerX + (buttonWidth + 40) / 2, exitButtonY);
+        // Add hover effect to each button
+        addHoverEffect(resumeButton, resumeButton.getY());
+        addHoverEffect(menuButton, menuButton.getY());
+        addHoverEffect(settingsButton, settingsButton.getY());
+        addHoverEffect(retryButton, retryButton.getY());
+        addHoverEffect(exitButton, exitButton.getY());
 
         // Add click listeners for each button
         resumeButton.addListener(new ClickListener() {
@@ -106,6 +118,20 @@ public class PauseScreen implements Screen {
         stage.addActor(settingsButton);
         stage.addActor(retryButton);
         stage.addActor(exitButton);
+    }
+
+    private void addHoverEffect(ImageButton button, float originalY) {
+        button.addListener(new InputListener() {
+            @Override
+            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                button.addAction(Actions.moveTo(button.getX(), originalY + 0.005f * 720, 0.1f));
+            }
+
+            @Override
+            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+                button.addAction(Actions.moveTo(button.getX(), originalY, 0.1f));
+            }
+        });
     }
 
     @Override
