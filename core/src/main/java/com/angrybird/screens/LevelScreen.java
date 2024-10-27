@@ -13,6 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 public class LevelScreen implements Screen {
@@ -33,9 +34,9 @@ public class LevelScreen implements Screen {
         stage.addActor(backgroundImage);  // Add the background first, so it renders behind other UI elements
 
         // Load level button images
-        level1Texture = new Texture(Gdx.files.internal("lv1.png"));
-        level2Texture = new Texture(Gdx.files.internal("lv2.png"));
-        level3Texture = new Texture(Gdx.files.internal("lv3.png"));
+        level1Texture = new Texture(Gdx.files.internal("lvl-1.png"));
+        level2Texture = new Texture(Gdx.files.internal("lvl-2.png"));
+        level3Texture = new Texture(Gdx.files.internal("lvl-3.png"));
         backButtonTexture = new Texture(Gdx.files.internal("back.png"));
         backHoverTexture = new Texture(Gdx.files.internal("back-h.png"));
 
@@ -44,21 +45,31 @@ public class LevelScreen implements Screen {
         ImageButton level2Button = new ImageButton(new TextureRegionDrawable(level2Texture));
         ImageButton level3Button = new ImageButton(new TextureRegionDrawable(level3Texture));
 
-        // Set button sizes (you can adjust these based on the image size)
-        level1Button.setSize(200, 200);
-        level2Button.setSize(200, 200);
-        level3Button.setSize(200, 200);
+        // Set button sizes
+        float buttonWidth = 200 * 1.2f;
+        float buttonHeight = 80 * 1.2f;
+        level1Button.setSize(buttonWidth, buttonHeight);
+        level2Button.setSize(buttonWidth, buttonHeight);
+        level3Button.setSize(buttonWidth, buttonHeight);
 
         // Center align the buttons and position them vertically with a 10-pixel gap
-        float centerX = (1280 - level1Button.getWidth()) / 2;
-        level1Button.setPosition(centerX, 320);  // Starting Y position of the first button
-        level2Button.setPosition(centerX, level1Button.getY() - level1Button.getHeight() - 10);  // 10px gap
-        level3Button.setPosition(centerX, level2Button.getY() - level2Button.getHeight() - 10);  // 10px gap
+//        float centerX = (1280 - level1Button.getWidth()) / 2;
+//        level1Button.setPosition(centerX, 370);
+//        level2Button.setPosition(centerX, level1Button.getY() - level1Button.getHeight() - 10);  // 10px gap
+//        level3Button.setPosition(centerX, level2Button.getY() - level2Button.getHeight() - 10);  // 10px gap
 
-        // Add hover and color-changing animation for the level buttons
-        addHoverAnimation(level1Button);
-        addHoverAnimation(level2Button);
-        addHoverAnimation(level3Button);
+        float baseY1 = 400 - 36;
+        float baseY2 = 320 - 40; // Reduced by 10 pixels
+        float baseY3 = 240 - 44;     // Reduced by 10 more pixels
+
+        level1Button.setPosition((1280 - level1Button.getWidth()) / 2, baseY1);
+        level2Button.setPosition((1280 - level2Button.getWidth()) / 2, baseY2);
+        level3Button.setPosition((1280 - level3Button.getWidth()) / 2, baseY3);
+
+        // Add hover animations to level buttons
+        addHoverEffect(level1Button,baseY1);
+        addHoverEffect(level2Button,baseY2);
+        addHoverEffect(level3Button,baseY3);
 
         // Create the back button
         ImageButton backButton = new ImageButton(
@@ -69,8 +80,8 @@ public class LevelScreen implements Screen {
         float centerYBack = (720 - backButton.getHeight()) / 2;  // Center the back button on the Y-axis
         backButton.setPosition(50, centerYBack);
 
-        // Add hover and animation for back button
-        addHoverAnimation(backButton);
+        // Add hover animation to back button
+        addHoverEffect(backButton,centerYBack);
 
         backButton.addListener(new ClickListener() {
             @Override
@@ -90,14 +101,14 @@ public class LevelScreen implements Screen {
         level2Button.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                // Implement logic for Level 2
+                game.setScreen(new GameScreen(game));
             }
         });
 
         level3Button.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                // Implement logic for Level 3
+                game.setScreen(new GameScreen(game));
             }
         });
 
@@ -108,18 +119,16 @@ public class LevelScreen implements Screen {
         stage.addActor(level3Button);
     }
 
-    private void addHoverAnimation(final ImageButton button) {
-        button.addListener(new ClickListener() {
+    private void addHoverEffect(ImageButton button, float originalY) {
+        button.addListener(new InputListener() {
             @Override
             public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                // Scale up the button by 0.5% smoothly
-                button.addAction(Actions.scaleTo(1.05f, 1.05f, 0.1f));
+                button.addAction(Actions.moveTo(button.getX(), originalY + 0.005f * 720, 0.1f));
             }
 
             @Override
             public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                // Scale back the button to its original size smoothly
-                button.addAction(Actions.scaleTo(1f, 1f, 0.1f));
+                button.addAction(Actions.moveTo(button.getX(), originalY, 0.1f));
             }
         });
     }

@@ -55,8 +55,8 @@ public class HomeScreen implements Screen {
 
         // Adjusted button positions with reduced gap
         float baseYPlay = 330 - 36;
-        float baseYSettings = 250 - 31; // Reduced by 10 pixels
-        float baseYExit = 170 - 26;     // Reduced by 10 more pixels
+        float baseYSettings = 250 - 34; // Reduced by 10 pixels
+        float baseYExit = 170 - 32;     // Reduced by 10 more pixels
 
         playButton.setPosition((1280 - playButton.getWidth()) / 2, baseYPlay);
         settingsButton.setPosition((1280 - settingsButton.getWidth()) / 2, baseYSettings);
