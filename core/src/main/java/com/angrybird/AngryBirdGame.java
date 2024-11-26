@@ -10,6 +10,7 @@ public class AngryBirdGame extends Game {
     public SpriteBatch batch;
     private Music backgroundMusic;
     private float musicVolume = 1.0f; // Default volume level (100%)
+    private boolean isMusicPlaying = false; // Track music play state
 
     @Override
     public void create() {
@@ -32,18 +33,34 @@ public class AngryBirdGame extends Game {
         this.musicVolume = volume;
         if (backgroundMusic != null) {
             backgroundMusic.setVolume(volume); // Apply volume to the music
+
+            // If volume is 0, stop the music; if not, ensure music plays if it was previously playing
+            if (volume == 0) {
+                stopMusic();
+            } else if (isMusicPlaying) {
+                playMusic();
+            }
         }
     }
 
     public void playMusic() {
-        if (backgroundMusic != null && !backgroundMusic.isPlaying()) {
+        if (backgroundMusic != null && !backgroundMusic.isPlaying() && musicVolume > 0) {
             backgroundMusic.play();
+            isMusicPlaying = true;
         }
     }
 
     public void stopMusic() {
         if (backgroundMusic != null && backgroundMusic.isPlaying()) {
             backgroundMusic.stop();
+            isMusicPlaying = false;
+        }
+    }
+
+    public void pauseMusic() {
+        if (backgroundMusic != null && backgroundMusic.isPlaying()) {
+            backgroundMusic.pause();
+            isMusicPlaying = false;
         }
     }
 

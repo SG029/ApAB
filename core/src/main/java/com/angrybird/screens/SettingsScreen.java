@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
@@ -39,29 +40,28 @@ public class SettingsScreen implements Screen {
         backgroundImage.setSize(1280, 720);
         stage.addActor(backgroundImage);
 
-        // Load back button images (normal and hover)
+        // Load back and exit button images
         backButtonTexture = new Texture(Gdx.files.internal("back.png"));
         backHoverTexture = new Texture(Gdx.files.internal("back-h.png"));
+        exitButtonTexture = new Texture(Gdx.files.internal("exit-btn.png"));
 
         // Create back button with normal and hover textures
-        ImageButton backButton = new ImageButton(
+        final ImageButton backButton = new ImageButton(
             new TextureRegionDrawable(backButtonTexture),
             new TextureRegionDrawable(backHoverTexture)
         );
 
-        backButton.setSize(100, 100);
-        float backButtonYPosition = (720 - backButton.getHeight()) / 2; // Center vertically on left side
+        float backButtonWidth = 100;
+        float backButtonHeight = 100;
+        backButton.setSize(backButtonWidth, backButtonHeight);
+        float backButtonYPosition = (720 - backButtonHeight) / 2; // Center vertically on left side
         backButton.setPosition(20, backButtonYPosition);
 
+        // Back button hover effect
+        addHoverEffect(backButton, backButtonYPosition);
+
+        // Back button click listener
         backButton.addListener(new ClickListener() {
-            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                backButton.addAction(Actions.moveTo(backButton.getX(), backButtonYPosition + 10, 0.2f));
-            }
-
-            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                backButton.addAction(Actions.moveTo(backButton.getX(), backButtonYPosition, 0.2f));
-            }
-
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 game.setScreen(previousScreen);
@@ -79,12 +79,16 @@ public class SettingsScreen implements Screen {
         volumeSlider = new Slider(0, 100, 1, false, skin);
         volumeSlider.setSize(400, 40);  // Shorter width for a more compact look
         volumeSlider.setPosition(centerX - volumeSlider.getWidth() / 2, 350);
-        volumeSlider.setValue(game.getMusicVolume() * 100);
+
+        // Set initial volume based on current game volume
+        float currentVolume = game.getMusicVolume();
+        volumeSlider.setValue(currentVolume * 100);
 
         volumeSlider.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                if (!muteCheckBox.isChecked()) {  // Only adjust volume if not muted
+                // Only adjust volume if not muted
+                if (!muteCheckBox.isChecked()) {
                     float volume = volumeSlider.getValue() / 100f;
                     game.setMusicVolume(volume);
                 }
@@ -96,42 +100,37 @@ public class SettingsScreen implements Screen {
         muteCheckBox.setTransform(true); // Enable transform for scaling
         muteCheckBox.setScale(2f);       // Make the checkbox larger
         muteCheckBox.setPosition(centerX - muteCheckBox.getWidth(), 280);
-        muteCheckBox.setChecked(game.getMusicVolume() == 0);
 
-        muteCheckBox.addListener(new ClickListener() {
+        // Set initial mute state
+        muteCheckBox.setChecked(currentVolume == 0);
+
+        muteCheckBox.addListener(new ChangeListener() {
             @Override
-            public void clicked(InputEvent event, float x, float y) {
+            public void changed(ChangeEvent event, Actor actor) {
                 if (muteCheckBox.isChecked()) {
+                    // Store the current volume before muting
+                    volumeSlider.setValue(0);
                     game.setMusicVolume(0);
-                    volumeSlider.setValue(0);  // Update slider visually
                 } else {
+                    // Restore to previous volume
                     float volume = volumeSlider.getValue() / 100f;
                     game.setMusicVolume(volume);
                 }
             }
         });
 
-        // Load exit button image
-        exitButtonTexture = new Texture(Gdx.files.internal("exit-btn.png"));
+        // Exit button
         ImageButton exitButton = new ImageButton(new TextureRegionDrawable(exitButtonTexture));
         float buttonWidth = 200 * 1.2f;
         float buttonHeight = 80 * 1.2f;
-        exitButton.setSize(buttonWidth, buttonHeight);  // Larger exit button
+        exitButton.setSize(buttonWidth, buttonHeight);
         float exitButtonY = 150;  // Position at the bottom-center
         exitButton.setPosition(centerX - exitButton.getWidth() / 2, exitButtonY);
 
-        // Add hover effect to raise exit button by a few pixels on hover
+        // Exit button hover and click effects
+        addHoverEffect(exitButton, exitButtonY);
+
         exitButton.addListener(new ClickListener() {
-            @Override
-            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                exitButton.addAction(Actions.moveTo(exitButton.getX(), exitButtonY + 10, 0.1f));
-            }
-
-            @Override
-            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                exitButton.addAction(Actions.moveTo(exitButton.getX(), exitButtonY, 0.1f));
-            }
-
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 Gdx.app.exit();  // Exit the application
@@ -147,14 +146,37 @@ public class SettingsScreen implements Screen {
         stage.addActor(exitButton);
     }
 
+    /**
+     * Adds a hover effect to a button that moves it slightly upwards when hovered.
+     *
+     * @param button     The button to add the effect to.
+     * @param originalY The original Y position of the button.
+     */
+    private void addHoverEffect(ImageButton button, float originalY) {
+        button.addListener(new InputListener() {
+            @Override
+            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                // Move button up by 3.6 pixels (0.005 * 720)
+                button.addAction(Actions.moveTo(button.getX(), originalY + 3.6f, 0.1f));
+            }
+
+            @Override
+            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+                // Move button back to original Y position
+                button.addAction(Actions.moveTo(button.getX(), originalY, 0.1f));
+            }
+        });
+    }
+
     @Override
     public void show() {
+        Gdx.input.setInputProcessor(stage);
     }
 
     @Override
     public void render(float delta) {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        stage.act();
+        stage.act(delta);
         stage.draw();
     }
 
@@ -173,6 +195,7 @@ public class SettingsScreen implements Screen {
 
     @Override
     public void hide() {
+        Gdx.input.setInputProcessor(null);
     }
 
     @Override
