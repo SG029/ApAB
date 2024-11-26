@@ -1,110 +1,143 @@
 package com.angrybird.screens;
 
 import com.angrybird.AngryBirdGame;
+import com.angrybird.entities.Bird;
+import com.angrybird.entities.Block;
+import com.angrybird.entities.Pig;
+import com.angrybird.levels.LevelManager;
+import com.angrybird.physics.PhysicsWorld;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
-import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.utils.Array;
 
 public class GameScreen implements Screen {
     private final AngryBirdGame game;
-    private final Stage stage;
-    private Texture backgroundTexture, pauseButtonTexture;
+    private final int levelNumber;
+    private OrthographicCamera camera;
+    private PhysicsWorld physicsWorld;
+    private SpriteBatch batch;
+    private Bird bird;
+    private Array<Block> blocks;
+    private Array<Pig> pigs;
 
-    public GameScreen(final AngryBirdGame game) {
+    /**
+     * Constructor for GameScreen.
+     *
+     * @param game        The main game instance.
+     * @param levelNumber The current level number.
+     */
+    public GameScreen(final AngryBirdGame game, int levelNumber) {
         this.game = game;
-        stage = new Stage(new ScreenViewport());
+        this.levelNumber = levelNumber;
 
-        Gdx.input.setInputProcessor(stage);
+        // Initialize camera
+        camera = new OrthographicCamera();
+        camera.setToOrtho(false, 16, 9); // 16:9 aspect ratio
 
-        // Load the background texture
-        backgroundTexture = new Texture(Gdx.files.internal("game-back.png"));
-        Image backgroundImage = new Image(backgroundTexture);
-        backgroundImage.setSize(1280, 720);  // Adjust to screen size
+        // Initialize physics world
+        physicsWorld = new PhysicsWorld();
+        World world = physicsWorld.getWorld();
 
-        // Add background image to the stage first so it is drawn behind other elements
-        stage.addActor(backgroundImage);
+        // Initialize batch
+        batch = new SpriteBatch();
 
-        // Load pause button texture
-        pauseButtonTexture = new Texture(Gdx.files.internal("pause.png"));
-        ImageButton pauseButton = new ImageButton(new TextureRegionDrawable(pauseButtonTexture));
+        // Initialize entities
+        bird = new Bird(world, 2, 2);
+        blocks = new Array<>();
+        pigs = new Array<>();
 
-        // Set button size and position on the top-left corner
-
-        pauseButton.setSize(120, 120);  // Set to appropriate size based on image dimensions
-        float pauseY = 720 - pauseButton.getHeight() - 10;
-        pauseButton.setPosition(10, pauseY);  // Positioned with padding from top-left
-
-        addHoverEffect(pauseButton,pauseY);
-
-        // Add click listener to pause button
-        pauseButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                game.setScreen(new PauseScreen(game));  // Switch to PauseScreen
-            }
-        });
-
-        // Add pause button to the stage after background
-        stage.addActor(pauseButton);
-    }
-
-    private void addHoverEffect(ImageButton button, float originalY) {
-        button.addListener(new InputListener() {
-            @Override
-            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                button.addAction(Actions.moveTo(button.getX(), originalY + 0.005f * 720, 0.1f));
-            }
-
-            @Override
-            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                button.addAction(Actions.moveTo(button.getX(), originalY, 0.1f));
-            }
-        });
-    }
-
-    @Override
-    public void show() {
+        // Load level configuration
+        LevelManager.loadLevel(levelNumber, world, blocks, pigs);
     }
 
     @Override
     public void render(float delta) {
+        // Handle pause input
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+            game.setScreen(new PauseScreen(game, levelNumber));
+            return;
+        }
+
+        // Clear the screen
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        stage.act();
-        stage.draw();
+
+        // Update physics
+        physicsWorld.step(delta);
+
+        // Handle input for launching the bird
+        if (Gdx.input.justTouched() && !bird.isLaunched()) {
+            bird.getBody().applyLinearImpulse(5f, 5f, bird.getBody().getPosition().x, bird.getBody().getPosition().y, true);
+            bird.setLaunched(true);
+        }
+
+        // Check victory and defeat conditions
+        if (pigs.size == 0) {
+            game.setScreen(new VictoryScreen(game, levelNumber));
+            return;
+        } else if (bird.isLaunched() && bird.getBody().getLinearVelocity().len() < 0.1f) {
+            game.setScreen(new DefeatScreen(game, levelNumber));
+            return;
+        }
+
+        // Render entities
+        batch.setProjectionMatrix(camera.combined);
+        batch.begin();
+        bird.render(batch);
+        for (Block block : blocks) {
+            block.render(batch);
+        }
+        for (Pig pig : pigs) {
+            pig.render(batch);
+        }
+        batch.end();
+
+        // Render physics debug (optional)
+        // physicsWorld.renderDebug(camera);
     }
 
     @Override
     public void resize(int width, int height) {
-        stage.getViewport().update(width, height, true);
+        // Adjust the viewport
+        camera.viewportWidth = 16;
+        camera.viewportHeight = 16 * (float) height / width;
+        camera.update();
     }
 
     @Override
-    public void pause() {
-    }
-
-    @Override
-    public void resume() {
+    public void show() {
+        // Set input processor if needed
     }
 
     @Override
     public void hide() {
+        // Called when this screen is no longer the current screen
+    }
+
+    @Override
+    public void pause() {
+        // Handle pause if necessary
+    }
+
+    @Override
+    public void resume() {
+        // Handle resume if necessary
     }
 
     @Override
     public void dispose() {
-        stage.dispose();
-        if (backgroundTexture != null) backgroundTexture.dispose();
-        if (pauseButtonTexture != null) pauseButtonTexture.dispose();
+        batch.dispose();
+        bird.dispose();
+        for (Block block : blocks) {
+            block.dispose();
+        }
+        for (Pig pig : pigs) {
+            pig.dispose();
+        }
+        physicsWorld.dispose();
     }
 }

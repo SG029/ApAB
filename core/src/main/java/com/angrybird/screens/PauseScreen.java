@@ -5,13 +5,10 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.scenes.scene2d.utils.*;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
@@ -19,10 +16,18 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 public class PauseScreen implements Screen {
     private final AngryBirdGame game;
     private final Stage stage;
+    private final int levelNumber; // Stores the current level number
     private Texture backgroundTexture, resumeTexture, menuTexture, settingsTexture, retryTexture, exitTexture;
 
-    public PauseScreen(final AngryBirdGame game) {
+    /**
+     * Constructor for PauseScreen.
+     *
+     * @param game        The main game instance.
+     * @param levelNumber The current level number.
+     */
+    public PauseScreen(final AngryBirdGame game, int levelNumber) {
         this.game = game;
+        this.levelNumber = levelNumber;
         stage = new Stage(new ScreenViewport());
 
         // Load the background texture and set it as an image on the stage
@@ -77,13 +82,16 @@ public class PauseScreen implements Screen {
         addHoverEffect(exitButton, exitButton.getY());
 
         // Add click listeners for each button
+
+        // Resume Button: Resumes the game by setting GameScreen with the current level
         resumeButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                game.setScreen(new GameScreen(game));  // Resume GameScreen
+                game.setScreen(new GameScreen(game, levelNumber));  // Resume GameScreen with current level
             }
         });
 
+        // Menu Button: Returns to the HomeScreen
         menuButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -91,6 +99,7 @@ public class PauseScreen implements Screen {
             }
         });
 
+        // Settings Button: Opens SettingsScreen and passes the current PauseScreen for returning after settings
         settingsButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -98,13 +107,15 @@ public class PauseScreen implements Screen {
             }
         });
 
+        // Retry Button: Restarts the current level by setting GameScreen with the current level
         retryButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                game.setScreen(new GameScreen(game));  // Restart GameScreen
+                game.setScreen(new GameScreen(game, levelNumber));  // Restart GameScreen with current level
             }
         });
 
+        // Exit Button: Exits the game
         exitButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -120,15 +131,23 @@ public class PauseScreen implements Screen {
         stage.addActor(exitButton);
     }
 
+    /**
+     * Adds a hover effect to a button that moves it slightly upwards when hovered.
+     *
+     * @param button     The button to add the effect to.
+     * @param originalY The original Y position of the button.
+     */
     private void addHoverEffect(ImageButton button, float originalY) {
         button.addListener(new InputListener() {
             @Override
             public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                button.addAction(Actions.moveTo(button.getX(), originalY + 0.005f * 720, 0.1f));
+                // Move button up by 3.6 pixels (0.005 * 720)
+                button.addAction(Actions.moveTo(button.getX(), originalY + 3.6f, 0.1f));
             }
 
             @Override
             public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+                // Move button back to original Y position
                 button.addAction(Actions.moveTo(button.getX(), originalY, 0.1f));
             }
         });
@@ -136,36 +155,46 @@ public class PauseScreen implements Screen {
 
     @Override
     public void show() {
-        // Reset the input processor to this stage
+        // Set the input processor to the current stage
         Gdx.input.setInputProcessor(stage);
     }
 
     @Override
     public void render(float delta) {
+        // Clear the screen with a black color
+        Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        stage.act();
+
+        // Update and draw the stage
+        stage.act(delta);
         stage.draw();
     }
 
     @Override
     public void resize(int width, int height) {
+        // Update the viewport when the screen size changes
         stage.getViewport().update(width, height, true);
     }
 
     @Override
     public void pause() {
+        // Implement pause logic if necessary
     }
 
     @Override
     public void resume() {
+        // Implement resume logic if necessary
     }
 
     @Override
     public void hide() {
+        // Clear the input processor when the screen is hidden
+        Gdx.input.setInputProcessor(null);
     }
 
     @Override
     public void dispose() {
+        // Dispose of assets to free resources
         stage.dispose();
         if (backgroundTexture != null) backgroundTexture.dispose();
         if (resumeTexture != null) resumeTexture.dispose();

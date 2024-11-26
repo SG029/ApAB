@@ -1,52 +1,33 @@
+# ApAB
 
-# Angry Birds Game (Java Edition)
+A [libGDX](https://libgdx.com/) project generated with [gdx-liftoff](https://github.com/libgdx/gdx-liftoff).
 
-This project is an Angry Birds-style game created in Java using the [libGDX](https://libgdx.com/) framework. 
-Developed as a part of a college assignment, this project features a static GUI representation of the game, 
-complete with screen transitions and UI components, but without functional event handlers.
+This project was generated with a template including simple application launchers and an `ApplicationAdapter` extension that draws libGDX logo.
 
-## Project Structure
-- **Java Framework**: Built using libGDX, a cross-platform game development framework.
-- **IDE**: Developed in IntelliJ IDEA with Gradle setup.
+## Platforms
 
-### Features
-1. **Home/Menu Screen**: 
-   - Includes a game poster, intro music, and a loading screen.
-   - Buttons allow navigation to the game screen or exit.
-2. **Level Selection Screen**: 
-   - Allows players to choose from three levels (Level 1, Level 2, Level 3).
-   - Each level redirects to a static Game Screen.
-3. **Game Screen**: 
-   - Displays the main gameplay area with a static environment (birds, blocks, etc.).
-   - A pause button in the corner opens the pause menu.
-4. **Pause Screen**: 
-   - Includes options for resuming the game, adjusting settings, or exiting.
-5. **Settings Screen**: 
-   - Accessible from both the Menu and Pause Screens.
-   - Contains volume and other settings options.
-   
-### Assets
-- The `assets/` folder includes:
-  - Various icons and background images, such as `play.png`, `settings.png`, `exit.png`, `menu_bg.png`, `level_bg.png`, etc.
-  - A configuration file `button.json` for button styles.
+- `core`: Main module with the application logic shared by all platforms.
+- `lwjgl3`: Primary desktop platform using LWJGL3; was called 'desktop' in older docs.
 
-## How to Run
-1. Ensure Java and Gradle are installed.
-2. Clone the [Repository](https://github.com/SG029/ApAB/)
-3. Use the following commands to build and run the project:
-   ```bash
-   ./gradlew desktop:run
-   ```
+## Gradle
 
-## Requirements
-- **Java 8 or higher**
-- **Gradle 6.8 or higher** (included with the project as a Gradle wrapper)
-- **libGDX 1.10.0**
+This project uses [Gradle](https://gradle.org/) to manage dependencies.
+The Gradle wrapper was included, so you can run Gradle tasks using `gradlew.bat` or `./gradlew` commands.
+Useful Gradle tasks and flags:
 
-## Future Updates
-In the next development phases, functionality will be added to enable gameplay mechanics, including launching birds, calculating collisions, and level transitions.
+- `--continue`: when using this flag, errors will not stop the tasks from running.
+- `--daemon`: thanks to this flag, Gradle daemon will be used to run chosen tasks.
+- `--offline`: when using this flag, cached dependency archives will be used.
+- `--refresh-dependencies`: this flag forces validation of all dependencies. Useful for snapshot versions.
+- `build`: builds sources and archives of every project.
+- `cleanEclipse`: removes Eclipse project data.
+- `cleanIdea`: removes IntelliJ project data.
+- `clean`: removes `build` folders, which store compiled classes and built archives.
+- `eclipse`: generates Eclipse project data.
+- `idea`: generates IntelliJ project data.
+- `lwjgl3:jar`: builds application's runnable jar, which can be found at `lwjgl3/build/libs`.
+- `lwjgl3:run`: starts the application.
+- `test`: runs unit tests (if any).
 
-## Credits
-- Game graphics and assets provided in the `assets/` folder.
-- Sound effects and music sources will be credited once implemented in future phases.
-- Project developed as part of an academic assignment at [IIIT Delhi](https://www.iiitd.ac.in/) by [Sushant Gola](https://github.com/SG029) and [Satyam](https://github.com/itzsam-lol) 
+Note that most tasks that are not specific to a single project can be run with `name:` prefix, where the `name` should be replaced with the ID of a specific project.
+For example, `core:clean` removes `build` folder only from the `core` project.

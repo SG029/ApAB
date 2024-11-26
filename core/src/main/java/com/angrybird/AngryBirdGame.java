@@ -1,10 +1,10 @@
 package com.angrybird;
 
+import com.angrybird.screens.HomeScreen;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.angrybird.screens.HomeScreen;
 
 public class AngryBirdGame extends Game {
     public SpriteBatch batch;
@@ -16,7 +16,7 @@ public class AngryBirdGame extends Game {
         batch = new SpriteBatch();
 
         // Load background music, but don't play it immediately
-        backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("bgm.mp3"));
+        backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("audio/bgm.mp3"));
         backgroundMusic.setLooping(true);
         backgroundMusic.setVolume(musicVolume);
 
