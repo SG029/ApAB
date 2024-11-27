@@ -12,7 +12,7 @@ public class LevelManager {
         pigs.clear();
 
         // Level ground reference
-        float groundY = 1.2f;
+        float groundY = 1.3f;
 
         switch (levelNumber) {
             case 1:
