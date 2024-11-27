@@ -16,6 +16,9 @@ public class Bird {
         bodyDef.type = BodyDef.BodyType.DynamicBody;
         body = world.createBody(bodyDef);
 
+        // Set user data for collision detection
+        body.setUserData(this);
+
         // Define shape and fixture
         CircleShape shape = new CircleShape();
         shape.setRadius(0.5f);
@@ -23,16 +26,23 @@ public class Bird {
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
         fixtureDef.density = 1f;
+        fixtureDef.friction = 0.5f;
+        fixtureDef.restitution = 0.3f;
         body.createFixture(fixtureDef);
         shape.dispose();
 
-        // Load texture
-        texture = new Texture("pig.png");
+        // Load texture (consider changing to a bird texture)
+        texture = new Texture("bird.png");
         launched = false;
     }
 
     public void render(SpriteBatch batch) {
-        batch.draw(texture, body.getPosition().x - 0.5f, body.getPosition().y - 0.5f, 1, 1);
+        // Render the bird at its physics body position
+        batch.draw(texture,
+            body.getPosition().x - 0.5f,
+            body.getPosition().y - 0.5f,
+            1, 1
+        );
     }
 
     public void dispose() {
