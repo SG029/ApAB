@@ -4,6 +4,8 @@ import com.angrybird.AngryBirdGame;
 import com.angrybird.entities.Bird;
 import com.angrybird.entities.Block;
 import com.angrybird.entities.Pig;
+import com.angrybird.entities.Triangle; // Import Triangle class
+import com.angrybird.entities.Circle;   // Import Circle class
 import com.angrybird.levels.LevelManager;
 import com.angrybird.physics.PhysicsWorld;
 import com.badlogic.gdx.Gdx;
@@ -15,12 +17,11 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Contact;
-import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
+import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
@@ -40,6 +41,8 @@ public class GameScreen implements Screen {
     private Bird bird;
     private Array<Block> blocks;
     private Array<Pig> pigs;
+    private Array<Triangle> triangles; // Declare array for triangles
+    private Array<Circle> circles;     // Declare array for circles
     private int levelNumber;
     private Texture backgroundTexture;
     private Texture slingshotTexture;
@@ -132,9 +135,11 @@ public class GameScreen implements Screen {
         // Initialize entities
         blocks = new Array<>();
         pigs = new Array<>();
+        triangles = new Array<>(); // Initialize triangles array
+        circles = new Array<>();   // Initialize circles array
 
-        // Load level configuration
-        LevelManager.loadLevel(levelNumber, world, blocks, pigs);
+        // Load level configuration with additional arguments for triangles and circles
+        LevelManager.loadLevel(levelNumber, world, blocks, pigs, triangles, circles);
 
         // Create bird at slingshot position
         bird = new Bird(world, SLINGSHOT_X + BIRD_OFFSET_X, SLINGSHOT_Y + BIRD_OFFSET_Y);
@@ -174,7 +179,7 @@ public class GameScreen implements Screen {
         // Clear the screen
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        // Update physics
+        // Update physics world (step simulation)
         physicsWorld.step(delta);
 
         // Handle input for bird launch and pause button
@@ -199,13 +204,16 @@ public class GameScreen implements Screen {
         // Draw pause button
         batch.draw(pauseButtonTexture, PAUSE_BUTTON_X, PAUSE_BUTTON_Y, PAUSE_BUTTON_WIDTH, PAUSE_BUTTON_HEIGHT);
 
-        // Render other game entities
+        // Render blocks (they will now move with collisions)
         for (Block block : blocks) {
-            block.render(batch);
+            block.render(batch); // Render block with correct size and position
         }
+
+        // Render pigs (they are static by default)
         for (Pig pig : pigs) {
-            pig.render(batch);
+            pig.render(batch); // Render pig with correct size and position
         }
+
         batch.end();
 
         // Draw slingshot bands
@@ -296,7 +304,7 @@ public class GameScreen implements Screen {
 
     private void drawSlingshotBands() {
         shapeRenderer.setProjectionMatrix(camera.combined);
-        shapeRenderer.begin(ShapeType.Filled);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(0.5f, 0.3f, 0.1f, 1f);
 
         // Left slingshot band
@@ -345,6 +353,12 @@ public class GameScreen implements Screen {
         }
         for (Pig pig : pigs) {
             pig.dispose();
+        }
+        for (Triangle triangle : triangles) {
+            triangle.dispose(); // Dispose of the triangle resources
+        }
+        for (Circle circle : circles) {
+            circle.dispose(); // Dispose of the circle resources
         }
         physicsWorld.dispose();
     }
