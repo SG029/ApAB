@@ -11,67 +11,77 @@ public class LevelManager {
         blocks.clear();
         pigs.clear();
 
+        // Level ground reference
+        float groundY = 1.2f;
+
         switch (levelNumber) {
             case 1:
                 // Level 1 Configuration
                 // Ground level blocks on the right side of the screen
-                blocks.add(new Block(world, 10, 1.2f));
-                blocks.add(new Block(world, 11, 1.2f));
-                blocks.add(new Block(world, 12, 1.2f));
+                blocks.add(new Block(world, 10, groundY));  // Ground block
+                blocks.add(new Block(world, 11, groundY));  // Ground block
+                blocks.add(new Block(world, 12, groundY));  // Ground block
 
-                // Blocks on top of ground blocks
-                blocks.add(new Block(world, 10, 2.2f));
-                blocks.add(new Block(world, 11, 2.2f));
-                blocks.add(new Block(world, 12, 2.2f));
+                // Blocks placed on top of the ground (1 unit above)
+                blocks.add(new Block(world, 10, groundY + 1));
+                blocks.add(new Block(world, 11, groundY + 1));
+                blocks.add(new Block(world, 12, groundY + 1));
 
-                // Pig placement on top of the block structure
-                pigs.add(new Pig(world, 11, 3));
-                pigs.add(new Pig(world, 10.5f, 3));
-                pigs.add(new Pig(world, 11.5f, 3));
+                // Pig placement on top of the blocks
+                pigs.add(new Pig(world, 10.5f, groundY + 2)); // Center pig
+                pigs.add(new Pig(world, 11.5f, groundY + 2)); // Right pig
+                pigs.add(new Pig(world, 9.5f, groundY + 2));  // Left pig
                 break;
 
             case 2:
                 // Level 2 Configuration
-                // Block structure
-                blocks.add(new Block(world, 10, 1));
-                blocks.add(new Block(world, 11, 1));
-                blocks.add(new Block(world, 12, 1));
+                // Ground level blocks
+                blocks.add(new Block(world, 10, groundY));
+                blocks.add(new Block(world, 11, groundY));
+                blocks.add(new Block(world, 12, groundY));
 
-                blocks.add(new Block(world, 11, 2));
-                blocks.add(new Block(world, 12, 2));
+                // Stacked blocks forming a stepped structure
+                blocks.add(new Block(world, 10, groundY + 1));
+                blocks.add(new Block(world, 11, groundY + 1));
+                blocks.add(new Block(world, 12, groundY + 1));
 
-                blocks.add(new Block(world, 12, 3));
+                blocks.add(new Block(world, 11, groundY + 2)); // Stepped block
+                blocks.add(new Block(world, 12, groundY + 2)); // Stepped block
 
-                // Pig placement
-                pigs.add(new Pig(world, 11.5f, 2));
-                pigs.add(new Pig(world, 12, 4));
+                // Pig placement above the blocks
+                pigs.add(new Pig(world, 10.5f, groundY + 1.5f)); // First pig
+                pigs.add(new Pig(world, 11.5f, groundY + 2.5f)); // Second pig, higher position
                 break;
 
             case 3:
-                // Complex block structure
-                blocks.add(new Block(world, 10, 1));
-                blocks.add(new Block(world, 11, 1));
-                blocks.add(new Block(world, 12, 1));
-                blocks.add(new Block(world, 13, 1));
+                // Level 3 Configuration
+                // More complex structure with layers and platforms
+                blocks.add(new Block(world, 10, groundY));
+                blocks.add(new Block(world, 11, groundY));
+                blocks.add(new Block(world, 12, groundY));
+                blocks.add(new Block(world, 13, groundY));
 
-                blocks.add(new Block(world, 10, 2));
-                blocks.add(new Block(world, 11, 2));
-                blocks.add(new Block(world, 12, 2));
-                blocks.add(new Block(world, 13, 2));
+                blocks.add(new Block(world, 10, groundY + 1));
+                blocks.add(new Block(world, 11, groundY + 1));
+                blocks.add(new Block(world, 12, groundY + 1));
+                blocks.add(new Block(world, 13, groundY + 1));
 
-                blocks.add(new Block(world, 11, 3));
-                blocks.add(new Block(world, 12, 3));
-                blocks.add(new Block(world, 13, 3));
+                blocks.add(new Block(world, 10, groundY + 2));
+                blocks.add(new Block(world, 11, groundY + 2));
+                blocks.add(new Block(world, 12, groundY + 2));
+                blocks.add(new Block(world, 13, groundY + 2));
 
-                blocks.add(new Block(world, 12, 4));
-                blocks.add(new Block(world, 13, 4));
+                blocks.add(new Block(world, 11, groundY + 3)); // Top block for more height
+                blocks.add(new Block(world, 12, groundY + 3)); // Top block
 
-                // Pig placement
-                pigs.add(new Pig(world, 10.5f, 2));
-                pigs.add(new Pig(world, 11.5f, 2));
-                pigs.add(new Pig(world, 12.5f, 2));
-                pigs.add(new Pig(world, 12, 5));
-                pigs.add(new Pig(world, 13, 5));
+                blocks.add(new Block(world, 12, groundY + 4)); // Topmost block for extra challenge
+
+                // Pig placement in different positions
+                pigs.add(new Pig(world, 10.5f, groundY + 1.5f)); // Lower pig
+                pigs.add(new Pig(world, 11.5f, groundY + 2.5f)); // Mid-height pig
+                pigs.add(new Pig(world, 12.5f, groundY + 2.5f)); // Mid-height pig, to the right
+                pigs.add(new Pig(world, 11.5f, groundY + 4.5f)); // Top pig
+                pigs.add(new Pig(world, 12.5f, groundY + 4.5f)); // Top pig, to the right
                 break;
 
             default:

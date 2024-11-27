@@ -9,20 +9,34 @@ import com.angrybird.physics.PhysicsWorld;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.physics.box2d.Contact;
+import com.badlogic.gdx.physics.box2d.ContactImpulse;
+import com.badlogic.gdx.physics.box2d.ContactListener;
+import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
+
+// New imports for ground creation
+import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
+import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
 
 public class GameScreen implements Screen {
     private final AngryBirdGame game;
     private OrthographicCamera camera;
     private PhysicsWorld physicsWorld;
     private SpriteBatch batch;
+    private ShapeRenderer shapeRenderer;
     private Bird bird;
     private Array<Block> blocks;
     private Array<Pig> pigs;
@@ -31,26 +45,61 @@ public class GameScreen implements Screen {
     private Texture slingshotTexture;
     private Texture pauseButtonTexture;
 
-    // Pause button positioning
+    // New sound effect
+    private Sound collisionSound;
+
+    // Slingshot mechanics (improved)
+    private static final float SLINGSHOT_X = 1.3f;
+    private static final float SLINGSHOT_Y = 1.2f; // Raised slingshot height
+    private static final float SLINGSHOT_WIDTH = 1.5f;
+    private static final float SLINGSHOT_HEIGHT = 3f; // Increased slingshot height
+    private static final float BIRD_OFFSET_X = 0.5f;
+    private static final float BIRD_OFFSET_Y = 0.75f; // Adjusted bird offset
+
+    // Improved launch parameters
+    private static final float MAX_PULL_DISTANCE = 3f;
+    private static final float LAUNCH_POWER_MULTIPLIER = 15f;
+    private static final float ANGLE_CORRECTION_FACTOR = 1.5f;
+    private static final float MIN_LAUNCH_FORCE = 5f;
+    private static final float MAX_LAUNCH_FORCE = 50f;
+
+    private Vector2 originalBirdPosition;
+    private Vector2 currentBirdPosition;
+    private Vector2 launchForce = new Vector2();
+    private boolean isSlingshotPulled = false;
+    private boolean isBirdLaunched = false;
+
     private static final float PAUSE_BUTTON_X = 0.5f;
     private static final float PAUSE_BUTTON_Y = 7.5f;
     private static final float PAUSE_BUTTON_WIDTH = 1.5f;
     private static final float PAUSE_BUTTON_HEIGHT = 1.5f;
 
-    // Slingshot positioning
-    private static final float SLINGSHOT_X = 1.3f;
-    private static final float SLINGSHOT_Y = 1.2f;
-    private static final float SLINGSHOT_WIDTH = 1.5f;
-    private static final float SLINGSHOT_HEIGHT = 2f;
-    private static final float BIRD_OFFSET_X = 0.5f;
-    private static final float BIRD_OFFSET_Y = 0.5f;
+    // New method to create ground
+    private void createGround(World world) {
+        // Ground body definition
+        BodyDef groundBodyDef = new BodyDef();
+        groundBodyDef.position.set(8f, 1.2f); // Raised the ground slightly
+        groundBodyDef.type = BodyDef.BodyType.StaticBody;
 
-    // Bird launch constants
-    private static final float MAX_LAUNCH_FORCE = 20f;
-    private static final float LAUNCH_FORCE_SCALE = 0.01f;
+        // Create the ground body
+        Body groundBody = world.createBody(groundBodyDef);
 
-    private Vector2 launchForce = new Vector2();
-    private boolean isBirdLaunched = false;
+        // Create a polygon shape for the ground
+        PolygonShape groundShape = new PolygonShape();
+        groundShape.setAsBox(8f, 0.1f); // Width of 16, height of 0.1
+
+        // Create fixture definition
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.shape = groundShape;
+        fixtureDef.friction = 1f;
+        fixtureDef.restitution = 0.6f;
+
+        // Create the ground fixture
+        groundBody.createFixture(fixtureDef);
+
+        // Clean up
+        groundShape.dispose();
+    }
 
     public GameScreen(final AngryBirdGame game, int levelNumber) {
         this.game = game;
@@ -60,17 +109,25 @@ public class GameScreen implements Screen {
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 16, 9);
 
-        // Initialize physics world
+        // Initialize physics world with more realistic gravity
         physicsWorld = new PhysicsWorld();
         World world = physicsWorld.getWorld();
+        world.setGravity(new Vector2(0, -9.8f)); // Standard gravity
 
-        // Initialize batch
+        // Create ground
+        createGround(world);
+
+        // Initialize batch and shape renderer
         batch = new SpriteBatch();
+        shapeRenderer = new ShapeRenderer();
 
         // Load textures
         backgroundTexture = new Texture("game-back.png");
         slingshotTexture = new Texture("slingshot.png");
         pauseButtonTexture = new Texture("pause.png");
+
+        // Load collision sound
+        collisionSound = Gdx.audio.newSound(Gdx.files.internal("audio/takar.mp3"));
 
         // Initialize entities
         blocks = new Array<>();
@@ -81,6 +138,35 @@ public class GameScreen implements Screen {
 
         // Create bird at slingshot position
         bird = new Bird(world, SLINGSHOT_X + BIRD_OFFSET_X, SLINGSHOT_Y + BIRD_OFFSET_Y);
+
+        // Store initial bird position
+        originalBirdPosition = new Vector2(SLINGSHOT_X + BIRD_OFFSET_X, SLINGSHOT_Y + BIRD_OFFSET_Y);
+        currentBirdPosition = new Vector2(originalBirdPosition);
+
+        // Add collision listener to detect pig hits
+        world.setContactListener(new ContactListener() {
+            @Override
+            public void beginContact(Contact contact) {
+                Object userDataA = contact.getFixtureA().getBody().getUserData();
+                Object userDataB = contact.getFixtureB().getBody().getUserData();
+
+                // Check if the contact involves a bird and a pig
+                if ((userDataA instanceof Bird && userDataB instanceof Pig) ||
+                    (userDataA instanceof Pig && userDataB instanceof Bird)) {
+                    // Play collision sound
+                    collisionSound.play();
+                }
+            }
+
+            @Override
+            public void endContact(Contact contact) {}
+
+            @Override
+            public void preSolve(Contact contact, Manifold oldManifold) {}
+
+            @Override
+            public void postSolve(Contact contact, ContactImpulse impulse) {}
+        });
     }
 
     @Override
@@ -107,7 +193,7 @@ public class GameScreen implements Screen {
         // Draw slingshot
         batch.draw(slingshotTexture, SLINGSHOT_X, SLINGSHOT_Y, SLINGSHOT_WIDTH, SLINGSHOT_HEIGHT);
 
-        // Draw bird on the slingshot
+        // Draw bird on the slingshot or in flight
         bird.render(batch);
 
         // Draw pause button
@@ -121,31 +207,72 @@ public class GameScreen implements Screen {
             pig.render(batch);
         }
         batch.end();
+
+        // Draw slingshot bands
+        if (isSlingshotPulled && !isBirdLaunched) {
+            drawSlingshotBands();
+        }
     }
 
     private void handleInput(float delta) {
-        // Handle bird launch
+        // Touch input for slingshot
         if (Gdx.input.isTouched() && !isBirdLaunched) {
-            // Calculate launch force based on touch position
+            // Convert touch coordinates to game world coordinates
             Vector3 touchPos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(touchPos);
-            launchForce.x = (touchPos.x - (SLINGSHOT_X + BIRD_OFFSET_X)) * LAUNCH_FORCE_SCALE;
-            launchForce.y = (touchPos.y - (SLINGSHOT_Y + BIRD_OFFSET_Y)) * LAUNCH_FORCE_SCALE;
 
-            // Clamp the launch force to the maximum value
-            float force = launchForce.len();
-            if (force > MAX_LAUNCH_FORCE) {
-                launchForce.scl(MAX_LAUNCH_FORCE / force);
+            // Calculate pull distance and angle
+            float pullDistance = Vector2.dst(touchPos.x, touchPos.y, originalBirdPosition.x, originalBirdPosition.y);
+
+            if (pullDistance <= MAX_PULL_DISTANCE) {
+                isSlingshotPulled = true;
+
+                // Update current bird position
+                currentBirdPosition.set(touchPos.x, touchPos.y);
+
+                // Calculate launch vector with improved trajectory calculation
+                Vector2 pullVector = new Vector2(originalBirdPosition).sub(currentBirdPosition);
+
+                // Adjust launch power based on pull distance
+                float pullStrength = Math.min(pullDistance / MAX_PULL_DISTANCE, 1f);
+
+                // Calculate launch angle with correction
+                float launchAngle = (float) Math.atan2(pullVector.y, pullVector.x);
+                float launchPower = pullStrength * LAUNCH_POWER_MULTIPLIER;
+
+                // Set launch force with angle correction
+                launchForce.x = (float) (Math.cos(launchAngle) * launchPower * ANGLE_CORRECTION_FACTOR);
+                launchForce.y = (float) (Math.abs(Math.sin(launchAngle)) * launchPower * ANGLE_CORRECTION_FACTOR);
+
+                // Clamp launch force
+                if (launchForce.len() > MAX_LAUNCH_FORCE) {
+                    launchForce.scl(MAX_LAUNCH_FORCE / launchForce.len());
+                }
+
+                // Update bird body position during pull
+                bird.getBody().setTransform(currentBirdPosition.x, currentBirdPosition.y, 0);
+                bird.getBody().setLinearVelocity(0, 0);
             }
         }
 
-        // Launch the bird when the touch is released
-        if (Gdx.input.justTouched() && !isBirdLaunched) {
-            bird.getBody().applyLinearImpulse(launchForce.x, launchForce.y,
-                bird.getBody().getPosition().x,
-                bird.getBody().getPosition().y,
-                true);
-            isBirdLaunched = true;
+        // Launch bird when touch is released
+        if (!Gdx.input.isTouched() && isSlingshotPulled) {
+            if (launchForce.len() > MIN_LAUNCH_FORCE) {
+                // Apply impulse with adjusted angle and power
+                bird.getBody().applyLinearImpulse(
+                    launchForce.x,
+                    launchForce.y,
+                    bird.getBody().getPosition().x,
+                    bird.getBody().getPosition().y,
+                    true
+                );
+                isBirdLaunched = true;
+            } else {
+                // Return bird to original position if not pulled enough
+                bird.getBody().setTransform(originalBirdPosition.x, originalBirdPosition.y, 0);
+            }
+
+            isSlingshotPulled = false;
         }
 
         // Handle pause button click
@@ -167,6 +294,32 @@ public class GameScreen implements Screen {
         }
     }
 
+    private void drawSlingshotBands() {
+        shapeRenderer.setProjectionMatrix(camera.combined);
+        shapeRenderer.begin(ShapeType.Filled);
+        shapeRenderer.setColor(0.5f, 0.3f, 0.1f, 1f);
+
+        // Left slingshot band
+        shapeRenderer.rectLine(
+            SLINGSHOT_X + 0.2f,
+            SLINGSHOT_Y + SLINGSHOT_HEIGHT * 0.7f,
+            currentBirdPosition.x,
+            currentBirdPosition.y,
+            0.1f
+        );
+
+        // Right slingshot band
+        shapeRenderer.rectLine(
+            SLINGSHOT_X + SLINGSHOT_WIDTH - 0.2f,
+            SLINGSHOT_Y + SLINGSHOT_HEIGHT * 0.7f,
+            currentBirdPosition.x,
+            currentBirdPosition.y,
+            0.1f
+        );
+
+        shapeRenderer.end();
+    }
+
     private void checkGameConditions() {
         // Victory condition: All pigs destroyed
         if (pigs.isEmpty()) {
@@ -181,10 +334,12 @@ public class GameScreen implements Screen {
     @Override
     public void dispose() {
         batch.dispose();
+        shapeRenderer.dispose();
         backgroundTexture.dispose();
         slingshotTexture.dispose();
         pauseButtonTexture.dispose();
         bird.dispose();
+        collisionSound.dispose(); // Dispose of the sound resource
         for (Block block : blocks) {
             block.dispose();
         }
