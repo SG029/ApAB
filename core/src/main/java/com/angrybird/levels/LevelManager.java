@@ -48,23 +48,30 @@ public class LevelManager {
                 break;
 
             case 3:
-                // Level 3 Configuration
                 // Complex block structure
                 blocks.add(new Block(world, 10, 1));
                 blocks.add(new Block(world, 11, 1));
                 blocks.add(new Block(world, 12, 1));
                 blocks.add(new Block(world, 13, 1));
 
+                blocks.add(new Block(world, 10, 2));
                 blocks.add(new Block(world, 11, 2));
                 blocks.add(new Block(world, 12, 2));
                 blocks.add(new Block(world, 13, 2));
 
+                blocks.add(new Block(world, 11, 3));
                 blocks.add(new Block(world, 12, 3));
+                blocks.add(new Block(world, 13, 3));
+
+                blocks.add(new Block(world, 12, 4));
+                blocks.add(new Block(world, 13, 4));
 
                 // Pig placement
+                pigs.add(new Pig(world, 10.5f, 2));
                 pigs.add(new Pig(world, 11.5f, 2));
                 pigs.add(new Pig(world, 12.5f, 2));
-                pigs.add(new Pig(world, 12, 4));
+                pigs.add(new Pig(world, 12, 5));
+                pigs.add(new Pig(world, 13, 5));
                 break;
 
             default:
