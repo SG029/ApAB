@@ -9,6 +9,7 @@ public class DefeatScreen implements Screen {
     private final AngryBirdGame game;
     private int levelNumber;
 
+
     public DefeatScreen(final AngryBirdGame game, int levelNumber) {
         this.game = game;
         this.levelNumber = levelNumber;
