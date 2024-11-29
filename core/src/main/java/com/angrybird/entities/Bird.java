@@ -8,6 +8,8 @@ public class Bird {
     private Body body;
     private Texture texture;
     private boolean launched;
+    private int health = 250; // Initial health for bird
+    private boolean isDestroyed = false;
 
     public Bird(World world, float x, float y) {
         // Create the physics body
@@ -36,13 +38,31 @@ public class Bird {
         launched = false;
     }
 
+    public void takeDamage(int damage) {
+        health -= damage;
+        if (health <= 0) {
+            health = 0;
+            isDestroyed = true;
+        }
+    }
+
+    public int getHealth() {
+        return health;
+    }
+
+    public boolean isDestroyed() {
+        return isDestroyed;
+    }
+
     public void render(SpriteBatch batch) {
-        // Render the bird at its physics body position
-        batch.draw(texture,
-            body.getPosition().x - 0.5f,
-            body.getPosition().y - 0.5f,
-            1, 1
-        );
+        // Only render if not destroyed
+        if (!isDestroyed) {
+            batch.draw(texture,
+                body.getPosition().x - 0.5f,
+                body.getPosition().y - 0.5f,
+                1, 1
+            );
+        }
     }
 
     public void dispose() {
