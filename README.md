@@ -1,33 +1,60 @@
-# ApAB
+# Angry Birds Game
 
-A [libGDX](https://libgdx.com/) project generated with [gdx-liftoff](https://github.com/libgdx/gdx-liftoff).
+## Overview
+Angry Birds is a physics-based game developed using Java, LibGDX, and Box2D. The game features a set of finite birds that the player shoots at structures containing pigs. The goal is to destroy all pigs using the fewest birds. The game includes multiple levels, different types of birds, various materials, and the ability to save and restore game states.
 
-This project was generated with a template including simple application launchers and an `ApplicationAdapter` extension that draws libGDX logo.
+This project integrates core Object-Oriented Programming (OOP) principles and uses design patterns to create an efficient, modular game.
 
-## Platforms
+## Features
 
-- `core`: Main module with the application logic shared by all platforms.
-- `lwjgl3`: Primary desktop platform using LWJGL3; was called 'desktop' in older docs.
+### Game Mechanics:
+- Shoot birds at structures made of materials like wood, glass, and steel.
+- Different bird types with unique abilities (e.g., Blackbird for explosions).
+- Multiple levels with increasing difficulty.
+- Pigs require multiple hits to be destroyed.
 
-## Gradle
+### Physics:
+- Utilizes Box2D for realistic physics simulation.
+- Materials have varying resistances, affecting the destruction of structures.
 
-This project uses [Gradle](https://gradle.org/) to manage dependencies.
-The Gradle wrapper was included, so you can run Gradle tasks using `gradlew.bat` or `./gradlew` commands.
-Useful Gradle tasks and flags:
+### Game Flow:
+- Player wins by destroying all pigs.
+- Player loses if they run out of birds or time.
 
-- `--continue`: when using this flag, errors will not stop the tasks from running.
-- `--daemon`: thanks to this flag, Gradle daemon will be used to run chosen tasks.
-- `--offline`: when using this flag, cached dependency archives will be used.
-- `--refresh-dependencies`: this flag forces validation of all dependencies. Useful for snapshot versions.
-- `build`: builds sources and archives of every project.
-- `cleanEclipse`: removes Eclipse project data.
-- `cleanIdea`: removes IntelliJ project data.
-- `clean`: removes `build` folders, which store compiled classes and built archives.
-- `eclipse`: generates Eclipse project data.
-- `idea`: generates IntelliJ project data.
-- `lwjgl3:jar`: builds application's runnable jar, which can be found at `lwjgl3/build/libs`.
-- `lwjgl3:run`: starts the application.
-- `test`: runs unit tests (if any).
+### Serialization:
+- Save and load game states for persistent gameplay.
 
-Note that most tasks that are not specific to a single project can be run with `name:` prefix, where the `name` should be replaced with the ID of a specific project.
-For example, `core:clean` removes `build` folder only from the `core` project.
+### GUI:
+- Built with LibGDX for smooth graphics and smooth transitions between game screens.
+
+### Testing:
+- Includes JUnit tests for core functionalities like login, cart operations, and game mechanics.
+
+## How to Run the Program
+
+### Prerequisites:
+- Java JDK 8 or above
+- LibGDX and Box2D libraries set up in your IDE (e.g., IntelliJ IDEA or Eclipse)
+
+### Running the Game:
+1. Clone the repository or download the source files.
+2. Open the project in your preferred IDE (e.g., IntelliJ IDEA or Eclipse).
+3. Configure the project dependencies:
+    - Ensure that LibGDX and Box2D libraries are correctly linked to the project.
+    - If not already set up, follow the instructions on LibGDX Setup to configure dependencies.
+4. Build the project to ensure all necessary libraries are included.
+5. Run the game:
+    - Locate and run the `Lwjgl3Launcher.java` class from the IDE.
+    - The game window should launch, and you can begin playing.
+
+### Controls:
+- Mouse or touch controls: Drag and aim the birds.
+- Click or tap to release the bird and hit the structures/pigs.
+
+## Game Screens:
+- **Main Menu:** Start the game, view instructions, or quit.
+- **Game Screen:** Play the game, shoot birds, destroy pigs.
+- **Level End Screen:** View the result (win/lose), and proceed to the next level.
+
+## License
+This project is licensed under the MIT License. Feel free to modify and share!
