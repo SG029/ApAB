@@ -8,32 +8,29 @@ public class Bird {
     private Body body;
     private Texture texture;
     private boolean launched;
-    private int health = 250; // Initial health for bird
+    private int health = 250;
     private boolean isDestroyed = false;
 
     public Bird(World world, float x, float y) {
-        // Create the physics body
         BodyDef bodyDef = new BodyDef();
         bodyDef.position.set(x, y);
         bodyDef.type = BodyDef.BodyType.DynamicBody;
         body = world.createBody(bodyDef);
 
-        // Set user data for collision detection
         body.setUserData(this);
+        body.setLinearDamping(0.5f);
 
-        // Define shape and fixture
         CircleShape shape = new CircleShape();
         shape.setRadius(0.5f);
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
-        fixtureDef.density = 1f;
-        fixtureDef.friction = 0.5f;
-        fixtureDef.restitution = 0.3f;
+        fixtureDef.density = 1.5f;
+        fixtureDef.friction = 0.7f;
+        fixtureDef.restitution = 0.2f;
         body.createFixture(fixtureDef);
         shape.dispose();
 
-        // Load texture (consider changing to a bird texture)
         texture = new Texture("bird.png");
         launched = false;
     }
@@ -55,7 +52,6 @@ public class Bird {
     }
 
     public void render(SpriteBatch batch) {
-        // Only render if not destroyed
         if (!isDestroyed) {
             batch.draw(texture,
                 body.getPosition().x - 0.5f,

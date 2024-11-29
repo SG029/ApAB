@@ -8,6 +8,7 @@ import com.angrybird.entities.Triangle;
 import com.angrybird.entities.Circle;
 import com.angrybird.levels.LevelManager;
 import com.angrybird.physics.PhysicsWorld;
+import com.angrybird.save.GameStateManager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
@@ -58,11 +59,12 @@ public class GameScreen implements Screen {
     private static final float BIRD_OFFSET_X = 0.5f;
     private static final float BIRD_OFFSET_Y = 0.75f;
 
-    private static final float MAX_PULL_DISTANCE = 3f;
-    private static final float LAUNCH_POWER_MULTIPLIER = 15f;
-    private static final float ANGLE_CORRECTION_FACTOR = 1.5f;
-    private static final float MIN_LAUNCH_FORCE = 5f;
-    private static final float MAX_LAUNCH_FORCE = 50f;
+
+    private static final float MAX_PULL_DISTANCE = 4f; // Increased from 3f
+    private static final float LAUNCH_POWER_MULTIPLIER = 25f; // Increased from 15f
+    private static final float ANGLE_CORRECTION_FACTOR = 1.8f; // Adjusted from 1.5f
+    private static final float MIN_LAUNCH_FORCE = 3f; // Lowered from 5f
+    private static final float MAX_LAUNCH_FORCE = 75f;
 
     private static final float PAUSE_BUTTON_X = 0.5f;
     private static final float PAUSE_BUTTON_Y = 7.5f;
@@ -74,10 +76,13 @@ public class GameScreen implements Screen {
     private Vector2 launchForce = new Vector2();
     private boolean isSlingshotPulled = false;
     private boolean isBirdLaunched = false;
+    private GameStateManager gameStateManager;
+
 
     public GameScreen(final AngryBirdGame game, int levelNumber) {
         this.game = game;
         this.levelNumber = levelNumber;
+        this.gameStateManager = game.getGameStateManager();
 
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 16, 9);
@@ -87,6 +92,8 @@ public class GameScreen implements Screen {
         world.setGravity(new Vector2(0, -9.8f));
 
         createGround(world);
+        createGround(world);
+        createWorldBoundaries(world);
 
         batch = new SpriteBatch();
         shapeRenderer = new ShapeRenderer();
@@ -228,6 +235,34 @@ public class GameScreen implements Screen {
             drawSlingshotBands();
         }
     }
+    private void createWorldBoundaries(World world) {
+        // Left boundary
+        createWall(world, 0, 4.5f, 0.1f, 9f);
+        // Right boundary
+        createWall(world, 16f, 4.5f, 0.1f, 9f);
+        // Top boundary
+        createWall(world, 8f, 9f, 16f, 0.1f);
+    }
+
+    private void createWall(World world, float x, float y, float width, float height) {
+        BodyDef wallDef = new BodyDef();
+        wallDef.position.set(x, y);
+        wallDef.type = BodyDef.BodyType.StaticBody;
+
+        Body wallBody = world.createBody(wallDef);
+
+        PolygonShape wallShape = new PolygonShape();
+        wallShape.setAsBox(width/2, height/2);
+
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.shape = wallShape;
+        fixtureDef.friction = 0.5f;
+        fixtureDef.restitution = 0.3f;
+
+        wallBody.createFixture(fixtureDef);
+        wallShape.dispose();
+    }
+
 
     private void handleInput(float delta) {
         if (Gdx.input.isTouched() && !isBirdLaunched && !bird.isDestroyed()) {
@@ -279,14 +314,16 @@ public class GameScreen implements Screen {
             Vector3 touchPos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(touchPos);
 
-            if (touchPos.x >= PAUSE_BUTTON_X && touchPos.x <= PAUSE_BUTTON_X + PAUSE_BUTTON_WIDTH &&
-                touchPos.y >= PAUSE_BUTTON_Y && touchPos.y <= PAUSE_BUTTON_Y + PAUSE_BUTTON_HEIGHT) {
-                game.setScreen(new PauseScreen(game, levelNumber));
+            // Check if pause button is touched
+            if (touchPos.x >= PAUSE_BUTTON_X &&
+                touchPos.x <= PAUSE_BUTTON_X + PAUSE_BUTTON_WIDTH &&
+                touchPos.y >= PAUSE_BUTTON_Y &&
+                touchPos.y <= PAUSE_BUTTON_Y + PAUSE_BUTTON_HEIGHT) {
+                game.setScreen(new PauseScreen(game, levelNumber, this));
             }
         }
-
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
-            game.setScreen(new PauseScreen(game, levelNumber));
+            game.setScreen(new PauseScreen(game, levelNumber, this));
         }
     }
 
@@ -331,22 +368,62 @@ public class GameScreen implements Screen {
 
         // Victory condition: All pigs destroyed
         if (pigs.isEmpty()) {
-            game.setScreen(new VictoryScreen(game, levelNumber));
+            // Update game state manager with level completion
+            gameStateManager.addCompletedLevel(levelNumber);
+            gameStateManager.updateLevelProgress(
+                calculateScore(),
+                0,
+                GAME_DURATION_LIMIT - gameTimer
+            );
+
+            game.saveGame(); // Save progress
+            game.setScreen(new VictoryScreen(game, levelNumber)); // Go to Victory screen
             return;
         }
 
         // Defeat conditions:
         // 1. Bird is destroyed
         if (bird.isDestroyed()) {
-            game.setScreen(new DefeatScreen(game, levelNumber));
+            game.setScreen(new DefeatScreen(game, levelNumber)); // Go to Defeat screen
             return;
         }
 
         // 2. 30 seconds passed and some pigs remain
         if (gameTimer >= GAME_DURATION_LIMIT && !pigs.isEmpty()) {
-            game.setScreen(new DefeatScreen(game, levelNumber));
+            game.setScreen(new DefeatScreen(game, levelNumber)); // Go to Defeat screen
         }
     }
+
+
+
+    private int calculateScore() {
+        int pigScore = pigs.isEmpty() ? 1000 : (1000 - (pigs.size * 200)); // Partial score based on remaining pigs
+        int timeBonus = Math.max(0, (int) ((GAME_DURATION_LIMIT - gameTimer) * 10)); // Bonus for quick completion
+        return Math.max(0, pigScore + timeBonus);
+    }
+
+    public int getCurrentScore() {
+        return calculateScore();
+    }
+
+    public int getRemainingPigs() {
+        return pigs.size;
+    }
+
+    public float getTimeRemaining() {
+        return Math.max(0, GAME_DURATION_LIMIT - gameTimer);
+    }
+
+    public void pausePhysics() {
+        // Pause the physics simulation if needed
+        physicsWorld.pause();
+    }
+
+    public void resumePhysics() {
+        // Resume the physics simulation if needed
+        physicsWorld.resume();
+    }
+
 
     @Override
     public void dispose() {

@@ -15,49 +15,41 @@ public class Block {
     private World world;
     private Body body;
 
-    private float width = 1f;  // Width of the block (in world units)
-    private float height = 1f; // Height of the block (in world units)
+    private float width = 1f;
+    private float height = 1f;
 
     public Block(World world, float x, float y) {
         this.world = world;
         this.position = new Vector2(x, y);
-        this.texture = new Texture("block.png"); // Path to block texture
+        this.texture = new Texture("block.png");
 
-        // Create physics body for the block
         createBody();
     }
 
     private void createBody() {
-        // Define body
         BodyDef bodyDef = new BodyDef();
-        bodyDef.type = BodyDef.BodyType.DynamicBody;  // Ensure it's a dynamic body
+        bodyDef.type = BodyDef.BodyType.DynamicBody;
         bodyDef.position.set(position);
-        bodyDef.angle = 0; // Ensure no initial rotation
-        bodyDef.allowSleep = false; // Prevent sleeping to keep it responsive
-        bodyDef.awake = true; // Keep the body awake
+        bodyDef.angle = 0;
+        bodyDef.allowSleep = false;
+        bodyDef.awake = true;
 
-        // Create the body in the world
         body = world.createBody(bodyDef);
 
-        // Set user data for collision detection
         body.setUserData(this);
 
-        // Create a box shape for the block (match the size of the texture)
         PolygonShape shape = new PolygonShape();
-        shape.setAsBox(width / 2, height / 2);  // Half width and height of the block
+        shape.setAsBox(width / 2, height / 2);
 
-        // Define fixture properties
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
-        fixtureDef.density = 2.0f;  // Increased density for more responsive physics
-        fixtureDef.friction = 0.5f; // Friction between block and ground
-        fixtureDef.restitution = 0.5f; // Increased bounciness (more responsive)
+        fixtureDef.density = 2.0f;
+        fixtureDef.friction = 0.5f;
+        fixtureDef.restitution = 0.5f;
 
-        // Create the fixture and attach it to the body
         body.createFixture(fixtureDef);
-        shape.dispose();  // Dispose shape after use to free up memory
+        shape.dispose();
 
-        // Update position to reflect body's initial position
         position.set(body.getPosition());
     }
 
@@ -66,7 +58,6 @@ public class Block {
     }
 
     public Vector2 getPosition() {
-        // Always get the most up-to-date position from the physics body
         return body.getPosition();
     }
 
@@ -75,14 +66,12 @@ public class Block {
     }
 
     public void dispose() {
-        texture.dispose();  // Dispose of texture when no longer needed
+        texture.dispose();
     }
 
-    // Render method to draw the block on screen with the correct size and rotation
     public void render(SpriteBatch batch) {
-        // Get current position and rotation from the physics body
         Vector2 pos = body.getPosition();
-        float rotation = body.getAngle() * 57.295779f; // Convert radians to degrees
+        float rotation = body.getAngle() * 57.295779f;
 
         batch.draw(texture,
             pos.x - width / 2,

@@ -17,9 +17,7 @@ public class Triangle {
     public Triangle(World world, float x, float y) {
         this.world = world;
         this.position = new Vector2(x, y);
-        this.texture = new Texture("triangle_small.png"); // Path to triangle texture
-
-        // Create physics body
+        this.texture = new Texture("triangle_small.png");
         createBody();
     }
 
@@ -31,7 +29,7 @@ public class Triangle {
         body = world.createBody(bodyDef);
 
         PolygonShape shape = new PolygonShape();
-        shape.set(new float[] {-0.5f, 0, 0.5f, 0, 0f, 0.5f}); // Triangle vertices
+        shape.set(new float[] {-0.5f, 0, 0.5f, 0, 0f, 0.5f});
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;

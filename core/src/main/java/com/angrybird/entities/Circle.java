@@ -5,7 +5,6 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 
@@ -18,9 +17,7 @@ public class Circle {
     public Circle(World world, float x, float y) {
         this.world = world;
         this.position = new Vector2(x, y);
-        this.texture = new Texture("circle_small.png"); // Path to circle texture
-
-        // Create physics body
+        this.texture = new Texture("circle_small.png");
         createBody();
     }
 
@@ -32,7 +29,7 @@ public class Circle {
         body = world.createBody(bodyDef);
 
         CircleShape shape = new CircleShape();
-        shape.setRadius(0.5f);  // Set the radius of the circle
+        shape.setRadius(0.5f);
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;

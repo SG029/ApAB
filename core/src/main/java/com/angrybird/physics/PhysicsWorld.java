@@ -7,9 +7,10 @@ import com.badlogic.gdx.physics.box2d.*;
 public class PhysicsWorld {
     private World world;
     private Box2DDebugRenderer debugRenderer;
+    private boolean isPaused = false;
+    private float accumulatedTime = 0f;
 
     public PhysicsWorld() {
-        // Initialize the physics world with gravity
         world = new World(new Vector2(0, -9.8f), true);
         debugRenderer = new Box2DDebugRenderer();
     }
@@ -19,8 +20,24 @@ public class PhysicsWorld {
     }
 
     public void step(float delta) {
-        // Step the physics simulation
-        world.step(delta, 6, 2);
+        if (!isPaused) {
+            world.step(delta, 6, 2);
+        } else {
+            accumulatedTime += delta;
+        }
+    }
+
+    public void pause() {
+        isPaused = true;
+    }
+
+    public void resume() {
+        isPaused = false;
+        accumulatedTime = 0f;
+    }
+
+    public boolean isPaused() {
+        return isPaused;
     }
 
     public void renderDebug(Camera camera) {
